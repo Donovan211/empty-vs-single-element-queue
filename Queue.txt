@@ -1,0 +1,204 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* next;
+    Node* prev;
+
+    Node(int value) {
+        data = value;
+        next = NULL;
+        prev = NULL;
+    }
+};
+
+Node* Front = NULL;
+Node* Rear = NULL;
+
+Node* Header = NULL;
+Node* Trailer = NULL;
+
+int queueSize = 0;
+
+void initializeQueue() {
+    Header = new Node(0);
+    Trailer = new Node(0);
+
+    Header->next = Trailer;
+    Trailer->prev = Header;
+
+    Front = NULL;
+    Rear = NULL;
+    queueSize = 0;
+}
+
+bool isEmpty() {
+    return Front == NULL;
+}
+
+bool isEmptyUsingSentinel() {
+    return Header->next == Trailer;
+}
+
+bool isSingle() {
+    return Front == Rear && Front != NULL;
+}
+
+bool isSingleUsingLinks() {
+    return Header->next != Trailer
+        && Header->next->next == Trailer
+        && Trailer->prev == Header->next;
+}
+
+void enqueue(int value) {
+    Node* newNode = new Node(value);
+
+    Node* lastNode = Trailer->prev;
+
+    newNode->prev = lastNode;
+    newNode->next = Trailer;
+
+    lastNode->next = newNode;
+    Trailer->prev = newNode;
+
+    Front = Header->next;
+    Rear = Trailer->prev;
+
+    queueSize++;
+
+    cout << value << " added to the queue." << endl;
+}
+
+void dequeue() {
+    if (isEmptyUsingSentinel()) {
+        cout << "Queue is empty. Nothing to remove."
+             << endl;
+        return;
+    }
+
+    Node* temp = Header->next;
+    int removedValue = temp->data;
+
+    Header->next = temp->next;
+    temp->next->prev = Header;
+
+    delete temp;
+
+    queueSize--;
+
+    if (queueSize == 0) {
+        Front = NULL;
+        Rear = NULL;
+    } else {
+        Front = Header->next;
+        Rear = Trailer->prev;
+    }
+
+    cout << removedValue << " removed from the queue."
+         << endl;
+}
+
+void display() {
+    if (isEmpty()) {
+        cout << "Queue is empty." << endl;
+        return;
+    }
+
+    Node* current = Front;
+
+    cout << "Queue: ";
+
+    while (current != Trailer) {
+        cout << current->data << " ";
+        current = current->next;
+    }
+
+    cout << endl;
+}
+
+void checkQueueState() {
+    cout << "\n--- Queue State Checks ---" << endl;
+
+    cout << "Null-pointer check: "
+         << (isEmpty() ? "Empty" : "Not empty")
+         << endl;
+
+    cout << "Size counter: " << queueSize << endl;
+
+    if (queueSize == 0) {
+        cout << "Size result: Empty queue" << endl;
+    } else if (queueSize == 1) {
+        cout << "Size result: Single-element queue" << endl;
+    } else {
+        cout << "Size result: Multiple-element queue" << endl;
+    }
+
+    cout << "Sentinel check: "
+         << (isEmptyUsingSentinel() ? "Empty" : "Not empty")
+         << endl;
+
+    cout << "Front == Rear: "
+         << (isSingle() ? "Yes, one element" : "No")
+         << endl;
+
+    cout << "Next-pointer check: "
+         << (isSingleUsingLinks()
+             ? "One element"
+             : "Not one element")
+         << endl;
+}
+
+void destroyQueue() {
+    Node* current = Header->next;
+
+    while (current != Trailer) {
+        Node* temp = current;
+        current = current->next;
+        delete temp;
+    }
+
+    delete Header;
+    delete Trailer;
+
+    Header = NULL;
+    Trailer = NULL;
+    Front = NULL;
+    Rear = NULL;
+    queueSize = 0;
+}
+
+int main() {
+    initializeQueue();
+
+    checkQueueState();
+
+    cout << "\nAdding elements:" << endl;
+    enqueue(10);
+    enqueue(20);
+
+    display();
+    checkQueueState();
+
+    cout << "\nRemoving one element:" << endl;
+    dequeue();
+
+    display();
+    checkQueueState();
+
+    cout << "\nRemoving the last element:" << endl;
+    dequeue();
+
+    display();
+    checkQueueState();
+
+    cout << "\nAdding an element after emptying:" << endl;
+    enqueue(30);
+
+    display();
+    checkQueueState();
+
+    destroyQueue();
+
+    return 0;
+}
